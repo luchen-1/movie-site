@@ -1,0 +1,13 @@
+node_modules
+dist
+.env
+data
+playwright-report
+test-results
+*.log
+*.pid
+artifacts-*.png
+final-*.png
+public-home.png
+public-movie*.png
+tools/cloudflared.exe
