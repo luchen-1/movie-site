@@ -1,0 +1,132 @@
+<%- include("../partials/head", { title }) %>
+<%- include("../partials/header", { currentPath }) %>
+
+<main class="shell home-shell">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Repository build: live product mode</p>
+      <h1>豆瓣片单，本站重打分。</h1>
+      <p class="hero-text">
+        自动同步豆瓣 <strong><%= syncLog?.status === "success" ? "正在上映" : "待首次同步" %></strong> 片单，
+        但评分和评论单独沉淀，避免“参考分”和“真实口碑”混成一团。
+      </p>
+      <div class="hero-stats">
+        <article>
+          <strong><%= stats.activeMovies %></strong>
+          <span>当前上映影片</span>
+        </article>
+        <article>
+          <strong><%= stats.totalReviews %></strong>
+          <span>本站评论数</span>
+        </article>
+        <article>
+          <strong><%= stats.averageSiteRating ?? "暂无" %></strong>
+          <span>本站均分</span>
+        </article>
+      </div>
+    </div>
+    <aside class="hero-panel">
+      <h2>同步状态</h2>
+      <p class="sync-status <%= syncLog?.status === 'success' ? 'status-good' : syncLog?.status === 'failed' ? 'status-bad' : '' %>">
+        <%= syncLog?.message ?? "服务已启动，等待首次同步。" %>
+      </p>
+      <dl class="sync-meta">
+        <div>
+          <dt>最近同步</dt>
+          <dd><%= formatDateTime(syncLog?.finished_at ?? syncLog?.started_at ?? null) %></dd>
+        </div>
+        <div>
+          <dt>同步影片数</dt>
+          <dd><%= syncLog?.fetched_count ?? 0 %></dd>
+        </div>
+        <div>
+          <dt>默认城市</dt>
+          <dd>上海</dd>
+        </div>
+      </dl>
+      <form class="search-form" action="/" method="get">
+        <label>
+          <span>搜索标题 / 导演 / 主演</span>
+          <input type="search" name="q" value="<%= filters.query %>" placeholder="例如：编号17、奉俊昊、白客">
+        </label>
+        <label>
+          <span>排序</span>
+          <select name="sort">
+            <option value="site" <%= filters.sort === 'site' ? 'selected' : '' %>>按本站评分</option>
+            <option value="douban" <%= filters.sort === 'douban' ? 'selected' : '' %>>按豆瓣参考分</option>
+            <option value="latest" <%= filters.sort === 'latest' ? 'selected' : '' %>>按最新同步</option>
+          </select>
+        </label>
+        <button type="submit">筛选片单</button>
+      </form>
+    </aside>
+  </section>
+
+  <% if (flash) { %>
+    <div class="banner banner-success"><%= flash %></div>
+  <% } %>
+  <% if (error) { %>
+    <div class="banner banner-error"><%= error %></div>
+  <% } %>
+
+  <section class="movie-section">
+    <div class="section-head">
+      <h2>正在上映</h2>
+      <p>左边是豆瓣参考分，右边是本站重算后的口碑。空分代表还没人评。</p>
+    </div>
+    <% if (movies.length === 0) { %>
+      <div class="empty-card">
+        <h3>目前还没有匹配结果</h3>
+        <p>可以换个搜索词，或者等待首次同步完成。</p>
+      </div>
+    <% } %>
+    <div class="movie-grid">
+      <% movies.forEach((movie) => { %>
+        <article class="movie-card">
+          <a class="poster-link" href="/movies/<%= movie.external_id %>">
+            <img src="/posters/<%= movie.external_id %>" alt="<%= movie.title %> 海报" loading="lazy">
+          </a>
+          <div class="movie-body">
+            <div class="movie-ratings">
+              <span>豆瓣 <strong><%= movie.douban_rating ?? "暂无" %></strong></span>
+              <span>本站 <strong><%= movie.site_rating ?? "暂无" %></strong></span>
+            </div>
+            <h3><a href="/movies/<%= movie.external_id %>"><%= movie.title %></a></h3>
+            <p class="meta-line"><%= movie.director ?? "导演待补充" %></p>
+            <p class="meta-line clamp"><%= movie.actors ?? "主演待补充" %></p>
+            <ul class="tag-row">
+              <li><%= movie.release_date ?? "档期待定" %></li>
+              <li><%= movie.review_count %> 条评论</li>
+            </ul>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+
+  <section class="review-section">
+    <div class="section-head">
+      <h2>最新评论</h2>
+      <p>先看情绪，再决定值不值得买票。</p>
+    </div>
+    <div class="review-feed">
+      <% recentReviews.forEach((review) => { %>
+        <article class="review-card">
+          <div class="review-topline">
+            <strong><%= review.nickname %></strong>
+            <span><%= review.movie_title %></span>
+            <b><%= review.rating %>/10</b>
+          </div>
+          <% if (review.comment_html) { %>
+            <p><%- review.comment_html %></p>
+          <% } else { %>
+            <p class="muted">只打分，没留评语。</p>
+          <% } %>
+          <a href="/movies/<%= review.external_id %>#reviews">查看影片详情</a>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+</main>
+
+<%- include("../partials/footer") %>
