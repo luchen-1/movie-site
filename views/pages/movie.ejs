@@ -1,0 +1,109 @@
+<%- include("../partials/head", { title }) %>
+<%- include("../partials/header", { currentPath }) %>
+
+<main class="shell detail-shell">
+  <a class="back-link" href="/">← 返回榜单</a>
+
+  <% if (flash) { %>
+    <div class="banner banner-success"><%= flash %></div>
+  <% } %>
+  <% if (error) { %>
+    <div class="banner banner-error"><%= error %></div>
+  <% } %>
+
+  <section class="detail-hero">
+    <div class="detail-poster">
+      <img src="/posters/<%= movie.external_id %>" alt="<%= movie.title %> 海报" loading="lazy">
+    </div>
+    <div class="detail-copy">
+      <p class="eyebrow">Douban subject #<%= movie.external_id %></p>
+      <h1><%= movie.title %></h1>
+      <div class="detail-ratings">
+        <article>
+          <span>本站评分</span>
+          <strong><%= movie.site_rating ?? "暂无" %></strong>
+          <small><%= movie.review_count %> 条评论</small>
+        </article>
+        <article>
+          <span>豆瓣参考</span>
+          <strong><%= movie.douban_rating ?? "暂无" %></strong>
+          <small><%= movie.douban_votes ?? 0 %> 人评价</small>
+        </article>
+      </div>
+      <dl class="detail-meta">
+        <div><dt>导演</dt><dd><%= movie.director ?? "待补充" %></dd></div>
+        <div><dt>主演</dt><dd><%= movie.actors ?? "待补充" %></dd></div>
+        <div><dt>地区</dt><dd><%= movie.regions ?? "待补充" %></dd></div>
+        <div><dt>类型</dt><dd><%= movie.genres ?? "待补充" %></dd></div>
+        <div><dt>片长</dt><dd><%= movie.duration ?? "待补充" %></dd></div>
+        <div><dt>上映信息</dt><dd><%= movie.release_date ?? "待补充" %></dd></div>
+        <div><dt>最近同步</dt><dd><%= formatDateTime(movie.updated_at) %></dd></div>
+      </dl>
+      <div class="link-row">
+        <a class="solid-link" href="<%= movie.douban_url %>" target="_blank" rel="noreferrer">打开豆瓣条目</a>
+        <% if (movie.ticket_url) { %>
+          <a class="ghost-link" href="<%= movie.ticket_url %>" target="_blank" rel="noreferrer">购票入口</a>
+        <% } %>
+      </div>
+    </div>
+  </section>
+
+  <div class="detail-grid">
+    <section class="panel review-form-panel" id="review-form">
+      <h2>给这部电影打分</h2>
+      <p>这里的分数只算本站用户，不跟豆瓣参考分混算。</p>
+      <form action="/movies/<%= movie.external_id %>/reviews" method="post" class="review-form">
+        <label>
+          <span>昵称</span>
+          <input type="text" name="nickname" maxlength="24" required placeholder="例如：小林、Luna、影迷007">
+        </label>
+        <label>
+          <span>评分</span>
+          <select name="rating" required>
+            <% for (let i = 10; i >= 1; i -= 1) { %>
+              <option value="<%= i %>"><%= i %>/10</option>
+            <% } %>
+          </select>
+        </label>
+        <label>
+          <span>评论</span>
+          <textarea name="comment" maxlength="500" rows="6" placeholder="可以留空；如果填写，请尽量说清楚你为什么打这个分。"></textarea>
+        </label>
+        <button type="submit">提交评分</button>
+      </form>
+    </section>
+
+    <section class="panel comments-panel" id="reviews">
+      <div class="section-head">
+        <h2>本站评论</h2>
+        <p>按最新发布排序。</p>
+      </div>
+
+      <% if (reviews.length === 0) { %>
+        <div class="empty-card">
+          <h3>还没有人评论</h3>
+          <p>你可以成为第一条本站口碑。</p>
+        </div>
+      <% } %>
+
+      <div class="comment-list">
+        <% reviews.forEach((review) => { %>
+          <article class="comment-card">
+            <div class="comment-head">
+              <strong><%= review.nickname %></strong>
+              <span><%= formatDateTime(review.created_at) %></span>
+              <b><%= review.rating %>/10</b>
+            </div>
+            <% if (review.comment_html) { %>
+              <p><%- review.comment_html %></p>
+            <% } else { %>
+              <p class="muted">只留下了分数，没有补充文字。</p>
+            <% } %>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+</main>
+
+<%- include("../partials/footer") %>
