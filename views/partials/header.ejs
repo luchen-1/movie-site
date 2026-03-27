@@ -1,0 +1,16 @@
+<header class="site-header">
+  <div class="shell nav-shell">
+    <a class="brand" href="/">
+      <span class="brand-mark">CP</span>
+      <span class="brand-text">
+        <strong>CinePulse</strong>
+        <small>正在上映电影的第二套评分系统</small>
+      </span>
+    </a>
+    <nav class="site-nav">
+      <a href="/" class="<%= currentPath === '/' ? 'is-active' : '' %>">电影榜单</a>
+      <a href="/api/movies">JSON API</a>
+      <a href="/healthz">Health</a>
+    </nav>
+  </div>
+</header>
