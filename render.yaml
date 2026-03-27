@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: luchen-1-movie-site
+    runtime: node
+    region: singapore
+    plan: starter
+    autoDeployTrigger: commit
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_TIMEZONE
+        value: Asia/Shanghai
+      - key: DOUBAN_CITY
+        value: shanghai
+      - key: DATA_DIR
+        value: /var/data
+      - key: DB_PATH
+        value: /var/data/cinepulse.db
+      - key: SYNC_ENABLED
+        value: "true"
+      - key: SYNC_ON_STARTUP
+        value: "true"
+      - key: DOUBAN_SYNC_CRON
+        value: "17 */6 * * *"
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: ADMIN_SYNC_TOKEN
+        generateValue: true
+    disk:
+      name: luchen-1-movie-site-data
+      mountPath: /var/data
+      sizeGB: 10
